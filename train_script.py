@@ -13,11 +13,11 @@ random_state = 100
 torch.manual_seed(random_state)
 torch.mps.manual_seed(random_state)
 torch.cuda.manual_seed_all(random_state)
-dev = ('cuda' if torch.cuda.is_available() 
+dev = torch.device(('cuda' if torch.cuda.is_available() 
         else 
             'mps' if torch.backends.mps.is_available() 
         else 
-           'cpu')
+           'cpu'))
 print(f'Device: {dev}')
 
 with open('config.json','r') as f:
