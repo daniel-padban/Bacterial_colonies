@@ -10,6 +10,7 @@ from trainer import ClassBacterialTrainer
 from class_dataset import ClassBacterialDataset
 
 current_datetime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
+print(current_datetime)
 
 random_state = 100
 torch.manual_seed(random_state)
