@@ -5,7 +5,7 @@ from torch.optim import AdamW
 from torch.utils.data import DataLoader
 import datetime
 
-from model import BacteriaClassiferCNN
+from model import BacterialClassiferCNN
 from trainer import ClassBacterialTrainer
 from class_dataset import ClassBacterialDataset
 
@@ -42,7 +42,7 @@ fc1 = config['fc1']
 
 out_dim = config['out_dim']
 
-model = BacteriaClassiferCNN(
+model = BacterialClassiferCNN(
     HW,
     conv1,
     k1,
@@ -82,7 +82,7 @@ train_dataset = ClassBacterialDataset(
     r_state=random_state,
     transform=train_transform
 )
-train_loader = DataLoader(train_dataset,batch_size=batch_size,shuffle=True)
+train_loader = DataLoader(train_dataset,batch_size=batch_size,shuffle=True,num_workers=3)
 
 test_transform = v2.Compose([
     v2.PILToTensor(),
@@ -100,7 +100,7 @@ test_dataset = ClassBacterialDataset(
     r_state=random_state,
     transform=test_transform
 )
-test_loader = DataLoader(test_dataset,batch_size=batch_size,shuffle=True)
+test_loader = DataLoader(test_dataset,batch_size=batch_size,shuffle=True,num_workers=3)
 
 lr = config['lr']
 w_decay = config['w_decay']

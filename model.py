@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-class BacteriaClassiferCNN(nn.Module):
+class BacterialClassiferCNN(nn.Module):
     def __init__(self, 
                  HW,
                  conv1,

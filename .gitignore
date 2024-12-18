@@ -1,5 +1,7 @@
 /bac-venv
 .DS_Store
-/data
+/data/
 __pycache__/
 *.pyc
+bac_images/
+bacteria_species.csv
