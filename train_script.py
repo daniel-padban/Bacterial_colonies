@@ -59,6 +59,7 @@ model = BacteriaClassiferCNN(
     fc1,
     out_dim
 )
+model.to(dev)
 
 batch_size = config['batch_size']
 train_transform = v2.Compose([
