@@ -82,7 +82,7 @@ train_dataset = ClassBacterialDataset(
     r_state=random_state,
     transform=train_transform
 )
-train_loader = DataLoader(train_dataset,batch_size=batch_size,shuffle=True,num_workers=2)
+train_loader = DataLoader(train_dataset,batch_size=batch_size,shuffle=True,num_workers=2,pin_memory=True)
 
 test_transform = v2.Compose([
     v2.PILToTensor(),
@@ -100,7 +100,7 @@ test_dataset = ClassBacterialDataset(
     r_state=random_state,
     transform=test_transform
 )
-test_loader = DataLoader(test_dataset,batch_size=batch_size,shuffle=True,num_workers=2)
+test_loader = DataLoader(test_dataset,batch_size=batch_size,shuffle=True,num_workers=2,pin_memory=True,)
 
 lr = config['lr']
 w_decay = config['w_decay']
