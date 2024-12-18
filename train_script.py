@@ -20,7 +20,7 @@ dev = ('cuda' if torch.cuda.is_available()
            'cpu')
 print(f'Device: {dev}')
 
-with open('/kaggle/working/bacterial-data/config.json','r') as f:
+with open('/kaggle/working/Bacterial_colonies/config.json','r') as f:
     config = json.load(f)
 
 print(f'Config:\n\n{config}')
