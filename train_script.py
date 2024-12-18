@@ -20,7 +20,7 @@ dev = ('cuda' if torch.cuda.is_available()
            'cpu')
 print(f'Device: {dev}')
 
-with open('/kaggle/working/Bacterial_colonies/config.json','r') as f:
+with open('config.json','r') as f:
     config = json.load(f)
 
 print(f'Config:\n\n{config}')
@@ -70,8 +70,8 @@ train_transform = v2.Compose([
 ])
 
 train_idx_slice = slice(0,215)
-img_dir = '/kaggle/input/bacterial-data/bac_images'
-labels_path = '/kaggle/input/bacterial-data/bacteria_species.csv'
+img_dir = 'bac_images'
+labels_path = 'bacteria_species.csv'
 train_dataset = ClassBacterialDataset(
     img_dir,
     labels_path,
