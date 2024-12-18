@@ -9,6 +9,8 @@ from model import BacterialClassiferCNN
 from trainer import ClassBacterialTrainer
 from class_dataset import ClassBacterialDataset
 
+current_datetime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
+
 random_state = 100
 torch.manual_seed(random_state)
 torch.mps.manual_seed(random_state)
@@ -112,5 +114,5 @@ trainer = ClassBacterialTrainer(model,train_loader,test_loader,optimizer,device=
 
 trainer.full_epoch_loop(epochs)
 
-current_datetime = datetime.datetime.now().strptime('%Y-%m-%d %H:%M')
+
 torch.save(model.state_dict(),f'models/model--{current_datetime}')
