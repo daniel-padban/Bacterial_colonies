@@ -1,23 +1,28 @@
 {
     "in_channels":3,
     "HW":100,
-    "conv1":128,
+
+    "conv1":16,
     "k1":2,
     "s1":1,
     "K_pool1":2,
-    "conv2":256,
+
+    "conv2":32,
     "k2":4,
     "s2":1,
     "K_pool2":2,
-    "conv3":512,
+
+    "conv3":64,
     "k3":4,
     "s3":1,
     "K_pool3":2,
-    "fc1":512,
+    
+    "fc1":64,
+    "fce":64,
     "out_dim":24,
 
-    "lr":1e-4,
-    "w_decay":0.2,
+    "lr":3e-4,
+    "w_decay":0.1,
     "batch_size":15,
-    "epochs":10
+    "epochs":1
 }

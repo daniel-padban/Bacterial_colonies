@@ -74,8 +74,8 @@ if __name__ == "__main__":
     
     idx_slice = slice(0,100)
     bac_set = ClassBacterialDataset(
-        img_dir='data/bac_images',
-        csv_labels_path='data/bacteria_species.csv',
+        img_dir='bac_images',
+        csv_labels_path='bacteria_species.csv',
         img_path_col='image_name',
         img_label_col='label_name',
         idx_slice=idx_slice,

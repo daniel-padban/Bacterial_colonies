@@ -49,6 +49,7 @@ sympy==1.13.3
 threadpoolctl==3.5.0
 torch==2.4.1
 torcheval==0.0.7
+torchTrainify==0.1.1
 torchvision==0.19.1
 tornado==6.4.2
 tqdm==4.67.1

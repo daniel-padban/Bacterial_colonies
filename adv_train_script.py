@@ -1,16 +1,15 @@
 import json
-import wandb
 import torch
+from torch.utils.data import Subset
 import torchvision.transforms.v2 as v2
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
+import pandas as pd
 import datetime
 
-from wandb.wandb_run import Run
-
-from base_model import BacterialClassiferCNN
-from trainer import ClassBacterialTrainer
-from class_dataset import ClassBacterialDataset
+from adv_model import AdvBacterialClassiferCNN
+from adv_trainer import AdvClassBacterialTrainer
+from adv_class_dataset import AdvClassBacterialDataset
 
 current_datetime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
 print(current_datetime)
@@ -31,6 +30,8 @@ with open('config.json','r') as f:
 
 print(f'Config:\n\n{config}')
 
+
+# -------------------- Model --------------------
 HW = config['HW']
 conv1 = config['conv1']
 k1 = config['k1']
@@ -45,10 +46,11 @@ k3 = config['k3']
 s3 = config['s3']
 K_pool3 = config['K_pool3']
 fc1 = config['fc1']
+fce = config['fce']
 
 out_dim = config['out_dim']
 
-model = BacterialClassiferCNN(
+model = AdvBacterialClassiferCNN(
     HW,
     conv1,
     k1,
@@ -63,11 +65,20 @@ model = BacterialClassiferCNN(
     s3,
     K_pool3,
     fc1,
+    fce,
+    9,
     out_dim
 )
 model.to(dev)
+#-------------------- General Dataset --------------------
+species_samples = pd.read_csv('bacteria_species.csv')
+with open('species_info.json') as si:
+    info_dict = json.load(si)
 
-batch_size = config['batch_size']
+main_dataset = AdvClassBacterialDataset(species_samples=species_samples,species_info=info_dict,r_state=random_state,transform=None)
+
+
+#-------------------- Train Dataset --------------------
 train_transform = v2.Compose([
     v2.RandAugment(3,5),
     v2.PILToTensor(),
@@ -76,53 +87,36 @@ train_transform = v2.Compose([
     v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
+batch_size = config['batch_size']
 train_idx_slice = slice(0,215)
-img_dir = 'bac_images'
-labels_path = 'bacteria_species.csv'
-train_dataset = ClassBacterialDataset(
-    img_dir,
-    labels_path,
-    'image_name',
-    'label_name',
-    train_idx_slice,
-    r_state=random_state,
-    transform=train_transform
-)
+train_indices = range(*train_idx_slice.indices(len(main_dataset)))
+train_dataset = Subset(main_dataset,train_indices)
+train_dataset.dataset.transform = train_transform
 train_loader = DataLoader(train_dataset,batch_size=batch_size,shuffle=True,num_workers=0,pin_memory=False)
 
+
+#-------------------- Test Dataset --------------------
 test_transform = v2.Compose([
     v2.PILToTensor(),
     v2.ToDtype(torch.float),
-    v2.Resize([HW,HW],),
+    v2.Resize([HW,HW]),
     v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
+
 test_idx_slice = slice(215,None)
-test_dataset = ClassBacterialDataset(
-    img_dir,
-    labels_path,
-    'image_name',
-    'label_name',
-    test_idx_slice,
-    r_state=random_state,
-    transform=test_transform
-)
+test_indices = range(*test_idx_slice.indices(len(main_dataset)))
+test_dataset = Subset(main_dataset,test_indices)
+test_dataset.dataset.transform = test_transform
 test_loader = DataLoader(test_dataset,batch_size=batch_size,shuffle=True,num_workers=0,pin_memory=False,)
 
+
+#-------------------- Training --------------------
 lr = config['lr']
 w_decay = config['w_decay']
 optimizer = AdamW(params=model.parameters(),lr=lr,weight_decay=w_decay)
-
 epochs = config['epochs']
 
-trainer = ClassBacterialTrainer(model,train_loader,test_loader,optimizer,device=dev)
-train_results, test_results = trainer.full_epoch_loop(epochs)
+trainer = AdvClassBacterialTrainer(model,train_loader,test_loader,optimizer,device=dev)
+trainer.full_epoch_loop(epochs)
 
-model_pth = f'models/model--{current_datetime}.pth'
-torch.save(model.state_dict(),model_pth)
-
-run:Run = wandb.init(project='Bacterial',name=f"Bact-{current_datetime}",config=config)
-trainer.log_to_wandb(run,train_results,)
-trainer.log_to_wandb(run,test_results,True)
-run.log_code()
-run.save(model_pth)
-run.finish()
+torch.save(model.state_dict(),f'models/adv_model--{current_datetime}')

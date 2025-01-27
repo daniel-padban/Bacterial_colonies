@@ -1,0 +1,122 @@
+{
+    "sp01": {
+        "gram": "-",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp02": {
+        "gram": "-",
+        "culturing": "aerobic",
+        "agar": "chocolate"
+    },
+    "sp03": {
+        "gram": "-",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp04": {
+        "gram": "+",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp05": {
+        "gram": "-",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp06": {
+        "gram": "-",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp07": {
+        "gram": "-",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp08": {
+        "gram": "+",
+        "culturing": "anaerobic",
+        "agar": "blood"
+    },
+    "sp09": {
+        "gram": "+",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp10": {
+        "gram": "+",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp11": {
+        "gram": "-",
+        "culturing": "aerobic",
+        "agar": "nutrient"
+    },
+    "sp12": {
+        "gram": "-",
+        "culturing": "aerobic",
+        "agar": "chocolate"
+    },
+    "sp13": {
+        "gram": "-",
+        "culturing": "aerobic",
+        "agar": "blood, nutrient"
+    },
+    "sp14": {
+        "gram": "+",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp15": {
+        "gram": "+",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp16": {
+        "gram": "-",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp17": {
+        "gram": "-",
+        "culturing": "aerobic",
+        "agar": "MacConkey"
+    },
+    "sp18": {
+        "gram": "-",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp19": {
+        "gram": "+",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp20": {
+        "gram": "-",
+        "culturing": "aerobic",
+        "agar": "nutrient"
+    },
+    "sp21": {
+        "gram": "+",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp22": {
+        "gram": "+",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp23": {
+        "gram": "+",
+        "culturing": "aerobic",
+        "agar": "blood"
+    },
+    "sp24": {
+        "gram": "+",
+        "culturing": "aerobic",
+        "agar": "blood"
+    }
+}

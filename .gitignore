@@ -5,3 +5,5 @@ __pycache__/
 *.pyc
 bac_images/
 bacteria_species.csv
+models/
+wandb/

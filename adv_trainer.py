@@ -1,19 +1,17 @@
 import numpy as np
-import wandb
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torcheval.metrics.functional import multiclass_f1_score
 import tqdm
-import wandb.wandb_run
 
-class ClassBacterialTrainer():
+class AdvClassBacterialTrainer():
     def __init__(self, model:nn.Module, train_dataloader:DataLoader, test_dataloader:DataLoader, optimizer:torch.optim.Optimizer,device=torch.device('cpu')):
         self.model = model
         self.train_dataloader = train_dataloader
         self.test_dataloader = test_dataloader
         self.optimizer = optimizer
-        self.device = device
+        self.device=device
         self.model.to(device)
         
         self.loss = nn.CrossEntropyLoss()
@@ -23,12 +21,13 @@ class ClassBacterialTrainer():
         batch_COs = []
         batch_accs = []
         batch_f1s = []
-        for (X, y) in tqdm.tqdm(self.train_dataloader):
+        for (X, y,e) in tqdm.tqdm(self.train_dataloader):
             self.optimizer.zero_grad()
             X:torch.Tensor = X.to(device=self.device)
             y:torch.Tensor = y.to(device=self.device)
+            e:torch.Tensor = e.to(device=self.device)
 
-            preds:torch.Tensor = self.model(X)
+            preds:torch.Tensor = self.model(X,e)
             probs = preds.softmax(1)
             loss:torch.Tensor = self.loss(preds,y)
             loss.backward()
@@ -57,11 +56,12 @@ class ClassBacterialTrainer():
         batch_accs = []
         batch_f1s = []
         with torch.no_grad():
-            for (X, y) in tqdm.tqdm(self.train_dataloader):
+            for (X, y, e) in tqdm.tqdm(self.train_dataloader):
                 X:torch.Tensor = X.to(device=self.device)
+                e:torch.Tensor = e.to(device=self.device)
                 y:torch.Tensor = y.to(device=self.device)
 
-                preds:torch.Tensor = self.model(X)
+                preds:torch.Tensor = self.model(X,e)
                 probs = preds.softmax(1)
                 loss:torch.Tensor = self.loss(preds,y)
                 
@@ -102,16 +102,3 @@ class ClassBacterialTrainer():
         
         return train_results, test_results
     
-    def log_to_wandb(self,run:wandb.wandb_run.Run,results,test=False):
-        if test:
-            test_state = 'test'
-        else:
-            test_state = 'train'
-            
-        for i, result_tup in enumerate(results):
-            run.log({'epoch':i+1,
-                     f'{test_state}_CE':result_tup[0],
-                     f'{test_state}_acc':result_tup[1],
-                     f'{test_state}_F1':result_tup[2]
-                     })
-            
