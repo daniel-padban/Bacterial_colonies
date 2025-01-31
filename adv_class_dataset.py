@@ -9,9 +9,10 @@ import torchvision.transforms.v2 as v2
 
 class AdvClassBacterialDataset(Dataset):
     '''
-        edwde
+        Pruoduces output of (img, label, embedding)
 
         :param all_data: Requires a list with tuples (img, label), will override loading by paths
+        
         '''
 
     def __init__(self,species_samples:pd.DataFrame,species_info:dict,r_state:int=None,transform:v2.Transform=None):
