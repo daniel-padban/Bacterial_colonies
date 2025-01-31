@@ -1,5 +1,6 @@
 import json
 import torch
+import wandb
 from torch.utils.data import Subset
 import torchvision.transforms.v2 as v2
 from torch.optim import AdamW
@@ -117,6 +118,28 @@ optimizer = AdamW(params=model.parameters(),lr=lr,weight_decay=w_decay)
 epochs = config['epochs']
 
 trainer = AdvClassBacterialTrainer(model,train_loader,test_loader,optimizer,device=dev)
-trainer.full_epoch_loop(epochs)
+train_results, test_results  = trainer.full_epoch_loop(epochs)
+model_pth = f'models/adv_model--{current_datetime}'
+torch.save(model.state_dict(),model_pth)
 
-torch.save(model.state_dict(),f'models/adv_model--{current_datetime}')
+run = wandb.init('DP-Team', 'Bacterial',config=config,name=f'adv_model--{current_datetime}')
+
+run.save(model_pth)
+for e,result_tup in enumerate(train_results):
+    log_dict = {
+        'Epoch':e+1,
+        'Train_CE':result_tup[0],
+        'Train_acc':result_tup[1],
+        'Train_F1':result_tup[2],
+    }
+    run.log(log_dict)
+
+for e,result_tup in enumerate(train_results):
+    log_dict = {
+        'Epoch':e+1,
+        'Train_CE':result_tup[0],
+        'Train_acc':result_tup[1],
+        'Train_F1':result_tup[2],
+    }
+    run.log(log_dict)
+run.finish(0)

@@ -49,7 +49,7 @@ class AdvClassBacterialDataset(Dataset):
         x = Image.open(f'bac_images/{img_pth}')
         if self.transform:
             x = self.transform(x)
-        y = int(species_id.strip(string.ascii_letters))
+        y = int(species_id.strip(string.ascii_letters))-1
         
         e = torch.tensor(species_meta)
         
@@ -64,4 +64,5 @@ if __name__ == '__main__':
     dataset = AdvClassBacterialDataset(species_df,info_dict,100,None,)
     x,y,e = dataset.__getitem__(0)
     dataset.__len__()
+    x.show()
     print(e.size(0))
