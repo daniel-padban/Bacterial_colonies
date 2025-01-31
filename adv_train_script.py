@@ -119,7 +119,7 @@ epochs = config['epochs']
 
 trainer = AdvClassBacterialTrainer(model,train_loader,test_loader,optimizer,device=dev)
 train_results, test_results  = trainer.full_epoch_loop(epochs)
-model_pth = f'models/adv_model--{current_datetime}'
+model_pth = f'models/adv_model--{current_datetime}.pth'
 torch.save(model.state_dict(),model_pth)
 
 run = wandb.init('DP-Team', 'Bacterial',config=config,name=f'adv_model--{current_datetime}')
