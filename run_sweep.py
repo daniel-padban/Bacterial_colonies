@@ -1,3 +1,4 @@
 import wandb
 
-wandb.agent(sweep_id=,count=10)
+wandb.wandb_agent(sweep_id=,count=10)
+wandb.init()

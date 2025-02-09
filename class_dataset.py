@@ -1,88 +1,69 @@
-import numpy as np
+import json
+from numpy import r_
+import torch
+import string
 import pandas as pd
 from torch.utils.data import Dataset
 from PIL import Image
+import torchvision.transforms.v2 as v2
 
-class ClassBacterialDataset(Dataset):
+class AdvClassBacterialDataset(Dataset):
     '''
-        edwde
+        Pruoduces output of (img, label, embedding)
 
         :param all_data: Requires a list with tuples (img, label), will override loading by paths
-        '''
-    def __init__(self, img_dir:str, csv_labels_path:str,img_path_col:str,img_label_col:str,idx_slice:slice, shuffle:bool=True,r_state:int=42,all_data:list = None, transform=None,):
-        super().__init__() 
         
-        self.transform = transform
-        self.img_dir = img_dir
-        self.labels = pd.read_csv(csv_labels_path)
-        self.img_path_col = img_path_col
-        self.img_label_col = img_label_col
-        self.idx_slice = idx_slice #which indices to use
-        if all_data is not None:
-            self.img_label_data = self._pick_data(all_data,shuffle,r_state)
-        else:
-            self.img_label_data, self.all_data = self._load_all_data(shuffle,r_state)
-        
-    def _load_all_data(self,shuffle:bool=True,r_state:int=None):
         '''
-        returns a list of tuples: (img, label) from source (directory)
-        '''
-        img_list = []
-        label_list = []
-        for img_path in self.labels['image_name']:
-            img = Image.open(self.img_dir + '/' + img_path)
-            label_df = self.labels.loc[self.labels[self.img_path_col] == img_path]
-            label = label_df[self.img_label_col].values[0]
-            img_list.append(img)
-            label_list.append(label)
-        all_data = list(zip(img_list,label_list))
 
-        if shuffle and r_state:
-            shuffled_data = pd.DataFrame(all_data).sample(frac=1,random_state=r_state)
-            data_to_use = shuffled_data[self.idx_slice]
-        else:
-            data_to_use = all_data[self.idx_slice]
-        return data_to_use, all_data
+    def __init__(self,species_samples:pd.DataFrame,species_info:dict,r_state:int=None,transform:v2.Transform=None):
+        super().__init__()
+
+        self.species_samples = species_samples
+        self.species_info = species_info
+        self.r_state = r_state
+        self.transform = transform
+        self.OH_info = self._prep_info()
+        self._shuffle_data()
+
+    def _prep_info(self):
+        info_df = pd.DataFrame.from_dict(self.species_info,orient='index')
+        info_df.index.name = 'species_id'
+        info_df.reset_index(inplace=True)
+        OH_encoded_df = pd.get_dummies(info_df,columns=['gram','culturing','agar'],prefix=['gram','culturing','agar'])
+        OH_encoded_df.set_index('species_id',inplace=True)
+        return OH_encoded_df
     
-    def _pick_data(self, all_data:list,shuffle:bool=True,r_state:int=None):
-        '''
-        Selects indices of already loaded data
-        '''
-        if shuffle and r_state:
-            shuffled_data = pd.DataFrame(all_data).sample(frac=1,random_state=r_state)
-            data_to_use = shuffled_data.iloc(0)[self.idx_slice]
+    def _shuffle_data(self):
+        if self.r_state:
+            self.species_samples = self.species_samples.sample(frac=1,random_state=self.r_state)
         else:
-            data_to_use = all_data[self.idx_slice]
-        
-        return data_to_use
+            self.species_samples = self.species_samples.sample(frac=1)
 
     def __len__(self):
-        data_len = len(self.img_label_data)
-        return data_len
-
+        return len(self.species_samples)
+    
     def __getitem__(self, idx):
-        X = self.img_label_data.iloc()[idx][0]
-        y = self.img_label_data.iloc()[idx][1]
-        y = int(y[2:]) - 1
-        if self.transform is not None:
-            X = self.transform(X)
+        img_pth = self.species_samples['image_name'].iloc[idx]
+        species_id:str = self.species_samples['label_name'].iloc[idx]
+        species_meta = self.OH_info.loc[species_id]
 
-        return X, y
-    
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    
-    idx_slice = slice(0,100)
-    bac_set = ClassBacterialDataset(
-        img_dir='bac_images',
-        csv_labels_path='bacteria_species.csv',
-        img_path_col='image_name',
-        img_label_col='label_name',
-        idx_slice=idx_slice,
-        transform=None,
-    )
+        x = Image.open(f'bac_images/{img_pth}')
+        if self.transform:
+            x = self.transform(x)
+        y = int(species_id.strip(string.ascii_letters))-1
+        
+        e = torch.tensor(species_meta)
+        
+        return x, y, e # x = image ------ y = species digit ----- e = embedding (species info)
 
-    test_img,test_label = bac_set.__getitem__(0)
-    print(test_label)
-    plt.imshow(np.asarray(test_img))
-    plt.show()
+
+if __name__ == '__main__':
+    with open('species_info.json') as si:
+        info_dict  = json.load(si)
+    species_df = pd.read_csv('bacteria_species.csv')
+
+    dataset = AdvClassBacterialDataset(species_df,info_dict,100,None,)
+    x,y,e = dataset.__getitem__(0)
+    dataset.__len__()
+    x.show()
+    print(e.size(0))

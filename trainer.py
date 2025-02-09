@@ -1,34 +1,36 @@
 import numpy as np
-import wandb
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torcheval.metrics.functional import multiclass_f1_score
 import tqdm
-import wandb.wandb_run
 
-class ClassBacterialTrainer():
-    def __init__(self, model:nn.Module, train_dataloader:DataLoader, test_dataloader:DataLoader, optimizer:torch.optim.Optimizer,device=torch.device('cpu')):
+class BacterialTrainer():
+    def __init__(self, model:nn.Module, train_dataloader:DataLoader, test_dataloader:DataLoader,optimizer:torch.optim.Optimizer,kfold_dataset=None,device=torch.device('cpu')):
         self.model = model
         self.train_dataloader = train_dataloader
         self.test_dataloader = test_dataloader
         self.optimizer = optimizer
-        self.device = device
+        self.device=device
         self.model.to(device)
+
+        if kfold_dataset:
+            self.kfold_dataset = kfold_dataset
         
         self.loss = nn.CrossEntropyLoss()
 
-    def train_loop(self, report_freq = 10):
+    def train_loop(self, dataloader):
         self.model.train()
         batch_COs = []
         batch_accs = []
         batch_f1s = []
-        for (X, y) in tqdm.tqdm(self.train_dataloader):
+        for (X, y,e) in tqdm.tqdm(dataloader):
             self.optimizer.zero_grad()
             X:torch.Tensor = X.to(device=self.device)
             y:torch.Tensor = y.to(device=self.device)
+            e:torch.Tensor = e.to(device=self.device)
 
-            preds:torch.Tensor = self.model(X)
+            preds:torch.Tensor = self.model(X,e)
             probs = preds.softmax(1)
             loss:torch.Tensor = self.loss(preds,y)
             loss.backward()
@@ -51,17 +53,18 @@ class ClassBacterialTrainer():
         
         return mean_epoch_CO, mean_epoch_acc, mean_epoch_f1
     
-    def test_loop(self):
+    def test_loop(self,dataloader):
         self.model.eval()
         batch_COs = []
         batch_accs = []
         batch_f1s = []
         with torch.no_grad():
-            for (X, y) in tqdm.tqdm(self.train_dataloader):
+            for (X, y, e) in tqdm.tqdm(dataloader):
                 X:torch.Tensor = X.to(device=self.device)
+                e:torch.Tensor = e.to(device=self.device)
                 y:torch.Tensor = y.to(device=self.device)
 
-                preds:torch.Tensor = self.model(X)
+                preds:torch.Tensor = self.model(X,e)
                 probs = preds.softmax(1)
                 loss:torch.Tensor = self.loss(preds,y)
                 
@@ -82,19 +85,20 @@ class ClassBacterialTrainer():
         
         return mean_epoch_CO, mean_epoch_acc, mean_epoch_f1
     
+    
     def full_epoch_loop(self,epochs):
         train_results = []
         test_results = []
         for epoch in range(epochs):
             print(f'Train Epoch: {epoch+1}')
-            train_epoch_CO, train_epoch_acc, train_epoch_f1 = self.train_loop()
+            train_epoch_CO, train_epoch_acc, train_epoch_f1 = self.train_loop(self.train_dataloader)
             print(f'Train CO: {train_epoch_CO}')
             print(f'Train Accuracy: {train_epoch_acc}')
             print(f'Train F1: {train_epoch_f1}')
             train_results.append((train_epoch_CO,train_epoch_acc,train_epoch_f1))
             
             print(f'    Test Epoch: {epoch+1}')
-            test_epoch_CO, test_epoch_acc, test_epoch_f1 = self.test_loop()
+            test_epoch_CO, test_epoch_acc, test_epoch_f1 = self.test_loop(self.test_dataloader)
             print(f'    Test CO: {test_epoch_CO}')
             print(f'    Test Accuracy: {test_epoch_acc}')
             print(f'    Test F1: {test_epoch_f1}')
@@ -102,16 +106,8 @@ class ClassBacterialTrainer():
         
         return train_results, test_results
     
-    def log_to_wandb(self,run:wandb.wandb_run.Run,results,test=False):
-        if test:
-            test_state = 'test'
-        else:
-            test_state = 'train'
-            
-        for i, result_tup in enumerate(results):
-            run.log({'epoch':i+1,
-                     f'{test_state}_CE':result_tup[0],
-                     f'{test_state}_acc':result_tup[1],
-                     f'{test_state}_F1':result_tup[2]
-                     })
-            
+    def kfold_validation(self,k=5):
+        if not self.kfold_dataset:
+            raise NotImplementedError('No kfolddataset was provided to AdvClassBacterialTrainer')
+        
+    
